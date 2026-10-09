@@ -464,6 +464,10 @@ footer .w{display:block}
 .auth-forgot-head{text-align:center;margin-bottom:4px}
 .auth-forgot-head h4{font-family:"Space Grotesk",sans-serif;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
 .auth-forgot-head p{font-size:12.5px;color:var(--soft);line-height:1.5}
+.pay.wa svg{color:#25D366}.pay.wa:hover{border-color:#25D366}.pay:disabled{opacity:.55;cursor:wait}
+.ord-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}@media(max-width:700px){.ord-grid{grid-template-columns:1fr}}
+.kodbox{background:var(--bl);padding:12px 14px;border-left:4px solid var(--o)}.kodbox small{display:block;color:var(--soft)}.kodbox b{font-size:19px;letter-spacing:.04em;word-break:break-all}
+.stp{display:flex;margin:16px 0}.stp div{flex:1;text-align:center;font-size:12px;padding:10px 4px;border-top:4px solid var(--line);color:var(--soft)}.stp div.on{border-color:var(--o);color:var(--ink);font-weight:700}
 </style>
 </head>
 <body class="home">
@@ -602,8 +606,8 @@ footer .w{display:block}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,collection,query,where,getDocs,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile,sendEmailVerification}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,collection,query,where,getDocs,serverTimestamp,runTransaction}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CFG={firebase:{apiKey:"AIzaSyBUTqw9eCeF82nkPDHKRSiV6B0cSezmMJ4",authDomain:"hevesmatik-90d0a.firebaseapp.com",projectId:"hevesmatik-90d0a",storageBucket:"hevesmatik-90d0a.firebasestorage.app",messagingSenderId:"733456385060",appId:"1:733456385060:web:8dcc57312b3c3ea10604b1"},
 adminEmail:"hevesmatik@gmail.com",firma:"Hevesmatik",tel:"05XX XXX XX XX",email:"hevesmatik@gmail.com",instagram:"https://instagram.com/hevesmatik",
@@ -612,7 +616,7 @@ banka:"Ziraat Bankası",hesapSahibi:"Hevesmatik",iban:"TR00 0000 0000 0000 0000 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],app=$("#app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const TL=n=>new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(n||0);
-const ICONS={user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',package:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/>',logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',card:'<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',bank:'<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>'};
+const ICONS={whatsapp:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>',user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',package:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/>',logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',card:'<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',bank:'<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>'};
 const ic=(n,z=18)=>`<svg width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`;
 
 const app0=initializeApp(CFG.firebase),auth=getAuth(app0),db=getFirestore(app0);
@@ -832,7 +836,7 @@ async function route(){
       let html="";
       if(a==="odeme")html=V.pay();
       else if(a==="profil")html=await V.profile();
-      else if(a==="takip")html=b?await V.done(b.toUpperCase()):V.track();
+      else if(a==="takip")html=b?await V.trackRes(decodeURIComponent(b).trim().toUpperCase()):V.track();
       else if(a==="siparis")html=await V.done(b.toUpperCase());
       else if(a==="ara")html=V.search(b);
       else if(a==="urun")html=V.prod(b);
@@ -853,25 +857,43 @@ function startCar(){clearInterval(window._timer);lastI=0;if(SLIDES.length>1&&$("
 /* ============ DİĞER SAYFALAR ============ */
 const V={};
 V.home=()=>`<div style="padding:20px 0">${empty("Sayfa bulunamadı")}</div>`;
-V.pay=()=>{if(!cart.length)return`<h2>Ödeme</h2>${empty("Sepetiniz boş","Alışverişe devam edin.")}`;const t=totals(),u=user,f=prof;
+V.pay=()=>{if(!cart.length)return`<h2>Ödeme</h2>${empty("Sepetiniz boş","Alışverişe devam edin.")}`;const t=totals(),u=user,f=prof,D=draftGet();
 return`<h2>Ödeme</h2><div class="two"><form class="box" onsubmit="return false"><h3 style="margin-top:0">Teslimat bilgileri</h3>
-<label>Ad Soyad *</label><input id="o1" value="${esc(f.ad||u?.displayName||"")}"><label>E-posta *</label><input id="o2" type="email" value="${esc(u?.email||"")}">
-<label>Telefon *</label><input id="o3" type="tel" value="${esc(f.tel||"")}"><label>İl / İlçe *</label><input id="o4" value="${esc(f.il||"")}"><label>Açık adres *</label><textarea id="o5" rows="3">${esc(f.adres||"")}</textarea>
-<label>Sipariş notu</label><textarea id="o6" rows="2"></textarea>
-<label class="chk"><input type="checkbox" id="o7"><span><a href="#/sayfa/mesafeli" target="_blank"><u>Mesafeli satış</u></a> ve <a href="#/sayfa/iade" target="_blank"><u>iade</u></a> koşullarını kabul ediyorum.</span></label>
-<label class="chk"><input type="checkbox" id="o8"><span><a href="#/sayfa/kvkk" target="_blank"><u>KVKK</u></a> metnini okudum.</span></label><div id="oE"></div></form>
+<label>Ad Soyad *</label><input id="o1" value="${esc(D.ad||f.ad||u?.displayName||"")}"><label>E-posta *</label><input id="o2" type="email" value="${esc(u?.email||D.email||"")}">
+<label>Telefon *</label><input id="o3" type="tel" value="${esc(D.tel||f.tel||"")}"><label>İl / İlçe *</label><input id="o4" value="${esc(D.il||f.il||"")}"><label>Açık adres *</label><textarea id="o5" rows="3">${esc(D.adres||f.adres||"")}</textarea>
+<label>Sipariş notu</label><textarea id="o6" rows="2">${esc(D.not||"")}</textarea>
+<label class="chk"><input type="checkbox" id="o7" ${D.k7?"checked":""}><span><a href="#/sayfa/mesafeli" target="_blank"><u>Mesafeli satış</u></a> ve <a href="#/sayfa/iade" target="_blank"><u>iade</u></a> koşullarını kabul ediyorum.</span></label>
+<label class="chk"><input type="checkbox" id="o8" ${D.k8?"checked":""}><span><a href="#/sayfa/kvkk" target="_blank"><u>KVKK</u></a> metnini okudum.</span></label><div id="oE"></div></form>
 <div class="box"><h3 style="margin-top:0">Sipariş özeti</h3><table>${cart.map(c=>{const p=prod(c.id);return p?`<tr><td>${c.q} × ${esc(p.ad)}</td><td>${TL(p.fiyat*c.q)}</td></tr>`:""}).join("")}</table>
 <p style="margin-top:10px">Kargo: ${t.k?TL(t.k):"Ücretsiz"}</p><h3>Havale ile: ${TL(t.top)}</h3><p>Kart ile: ${TL(t.sub+t.k)}</p>
 <button class="pay" id="payS">${ic("card",28)}<span><b>Shopier ile Öde</b><small>Kredi kartı · Taksit</small></span></button>
-<button class="pay" id="payH">${ic("bank",28)}<span><b>Havale / EFT <span class="badge g">%10 indirim</span></b><small>${TL(t.top)}</small></span></button></div></div>`};
-V.done=async code=>{let o;try{const s=await getDoc(doc(db,"orders",code));o=s.exists()?s.data():null}catch{o=null}
-if(!o)return`<h2>Sipariş bulunamadı</h2><p><a href="#/takip"><u>Sipariş takibi</u></a></p>`;
-const bank=o.status==="Ödeme Bekleniyor"&&o.odeme==="havale";
-return`<h2>Sipariş: <span class="badge">${esc(o.status)}</span></h2><div class="box"><small>Sipariş kodunuz</small><br><span class="code">${esc(code)}</span> <button class="btn s" data-cp="${esc(code)}">Kopyala</button>
-${o.trackingNo?`<p style="margin-top:10px">Kargo takip no: <b>${esc(o.trackingNo)}</b></p>`:""}</div>
-<div class="two" style="margin-top:16px"><div class="box"><h3 style="margin-top:0">Ürünler</h3><table>${(o.items||[]).map(x=>`<tr><td>${x.q} × ${esc(x.ad)}</td><td>${TL(x.fiyat*x.q)}</td></tr>`).join("")}</table><h3 style="text-align:right">Toplam: ${TL(o.total)}</h3></div>
-${bank?`<div class="box"><h3 style="margin-top:0">Havale bilgileri</h3><p>${TL(o.total)} tutarını açıklamaya <b>${esc(code)}</b> yazarak gönderin.</p><p><b>${esc(C("banka"))}</b><br>${esc(C("hesapSahibi"))}</p><p class="code" style="font-size:14px">${esc(C("iban"))}</p><br><button class="btn s" data-cp="${esc(C("iban").replace(/\s/g,""))}">IBAN'ı kopyala</button></div>`:""}</div>`};
-V.track=()=>`<h2>Sipariş takibi</h2><form class="box" id="fT" style="max-width:460px"><label>Sipariş kodu</label><input id="tc" placeholder="HVS-XXXXXXXXXX"><br><br><button class="btn p">Sorgula</button></form>`;
+<button class="pay" id="payH">${ic("bank",28)}<span><b>Havale / EFT <span class="badge g">%10 indirim</span></b><small>${TL(t.top)}</small></span></button>
+<button class="pay wa" id="payW">${ic("whatsapp",28)}<span><b>WhatsApp ile sipariş ver</b><small>Sipariş mesajı hazır gelir, sen gönderirsin · ${TL(t.sub+t.k)}</small></span></button></div></div>`};
+V.done=async code=>{let o=null;try{const sn=await getDoc(doc(db,"orders",code));if(sn.exists())o=sn.data()}catch{}
+if(!o)o=LSg("hvs_lo",{})[code]||null;
+if(!o)return`<h2>Sipariş görüntülenemiyor</h2><div class="box"><p>Bu siparişin ayrıntılarını yalnızca sipariş sahibi hesabıyla giriş yaparak görebilir veya <b>takip kodunu</b> kullanarak durumunu sorgulayabilirsiniz.</p><p style="margin-top:12px"><a class="btn p" href="#/takip">Takip koduyla sorgula</a></p></div>`;
+const hv=o.odeme==="havale",wa=o.odeme==="whatsapp",pend=/Bekleniyor/.test(o.status),m=o.musteri||{};
+const w=wa?waUrl(o):null,tlnk=location.origin+location.pathname+"#/takip/"+o.trackCode;
+return`<h2>${wa?"Siparişiniz kaydedildi":"Siparişiniz alındı"} <span class="badge">${esc(o.status)}</span></h2>
+${wa&&pend?note("<b>Önemli:</b> Sipariş mesajı WhatsApp'ta <b>gönderilene kadar</b> siparişiniz onaylanmış sayılmaz. Aşağıdaki butonla mesajı açıp kendiniz göndermelisiniz.",0):""}
+<div class="ord-grid"><div class="kodbox"><small>Sipariş numarası</small><b>${esc(o.code)}</b> <button class="btn s" data-cp="${esc(o.code)}">Kopyala</button></div>
+<div class="kodbox"><small>Takip kodunuz (saklayın)</small><b>${esc(o.trackCode||"-")}</b> <button class="btn s" data-cp="${esc(o.trackCode||"")}">Kopyala</button></div></div>
+<p style="font-size:13px;color:var(--soft)">${o.userId?"Bu sipariş hesabınıza bağlıdır; <a href=\"#/profil\"><u>Siparişlerim</u></a> bölümünden de görebilirsiniz.":"Hesapsız sipariş verdiniz. Siparişinizi sorgulamak için takip kodunu saklayın: <a href=\""+esc(tlnk)+"\"><u>takip bağlantısı</u></a>."}</p>
+${o.tsMs?`<p style="font-size:13px;color:var(--soft)">Sipariş tarihi: ${fmtDate(o.tsMs)}</p>`:""}
+<div class="two" style="margin-top:14px"><div class="box"><h3 style="margin-top:0">Ürünler</h3><table>${(o.items||[]).map(x=>`<tr><td>${x.q} × ${esc(x.ad)}${x.v?` <small>(${esc(x.v)})</small>`:""}<br><small>${TL(x.fiyat)} / adet</small></td><td style="text-align:right">${TL(x.fiyat*x.q)}</td></tr>`).join("")}</table>
+<p style="margin-top:10px">Ara toplam: ${TL(o.ara)}<br>İndirim: ${TL(o.indirim||0)}<br>Kargo: ${o.kargo?TL(o.kargo):"Ücretsiz"}</p><h3 style="text-align:right">Toplam: ${TL(o.total)}</h3>
+<p style="font-size:13px;color:var(--soft);margin-top:8px">Teslimat: ${esc(m.ad||"")} · ${esc(m.tel||"")}<br>${esc(m.adres||"")} ${esc(m.il||"")}</p></div>
+${hv&&pend?`<div class="box"><h3 style="margin-top:0">Havale / EFT talimatı</h3><p>${TL(o.total)} tutarını aşağıdaki hesaba gönderin. Açıklama kısmına <b>${esc(o.code)}</b> yazın.</p><p><b>${esc(C("banka"))}</b><br>${esc(C("hesapSahibi"))}</p><p class="code" style="font-size:14px">${esc(C("iban"))}</p><br><button class="btn s" data-cp="${esc(C("iban").replace(/\s/g,""))}">IBAN'ı kopyala</button><p style="font-size:13px;color:var(--soft);margin-top:10px">Ödemeniz doğrulanana kadar siparişiniz "Havale/EFT Bekleniyor" durumunda kalır.</p></div>`:""}
+${wa&&pend?`<div class="box"><h3 style="margin-top:0">WhatsApp ile onayla</h3><p style="font-size:14px">Mesaj, siparişinizin tüm bilgileriyle hazırlandı. WhatsApp'ta <b>Gönder</b>'e basmanız gerekir.</p><p style="margin-top:12px"><a class="btn p" href="${esc(w.url)}" target="_blank" rel="noopener" style="background:#25D366;border-color:#25D366">${ic("whatsapp",18)} WhatsApp'ta mesajı aç</a></p>${w.long?`<p style="font-size:13px;margin-top:8px">${note("Sipariş çok uzun olduğu için mesaj bağlantıya sığmadı. Mesajı kopyalayıp WhatsApp'a yapıştırın.")}</p>`:""}<p style="margin-top:8px"><button class="btn s" data-cp="${esc(w.msg)}">Mesajı kopyala</button></p><details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px">Mesaj önizlemesi</summary><pre style="white-space:pre-wrap;font:13px/1.5 inherit;margin-top:8px">${esc(w.msg)}</pre></details></div>`:""}</div>`};
+V.trackRes=async code=>{if(/^HM-/i.test(code)||/^HVS-/i.test(code))return`<h2>Sipariş takibi</h2>${note("Girdiğiniz değer bir <b>sipariş numarasıdır</b>. Gizlilik için takip yalnızca <b>TK-</b> ile başlayan takip koduyla yapılır. Hesabınız varsa <a href=\"#/profil\"><u>Siparişlerim</u></a> bölümünden de görebilirsiniz.",1)}${V.track()}`;
+let o=null;try{const sn=await getDoc(doc(db,"tracking",code));if(sn.exists())o=sn.data()}catch{}
+if(!o)return`<h2>Sipariş takibi</h2>${note("Bu takip koduyla sipariş bulunamadı. Kodu kontrol edin.",1)}${V.track()}`;
+const st=o.status,i=st==="Teslim Edildi"?3:st==="Kargoda"?2:st==="Hazırlanıyor"?1:0;
+return`<h2>Sipariş takibi <span class="badge">${esc(st)}</span></h2><div class="box">${st==="İptal"?note("Bu sipariş iptal edilmiştir.",1):`<div class="stp">${["Sipariş alındı","Hazırlanıyor","Kargoda","Teslim edildi"].map((x,k)=>`<div class="${k<=i?"on":""}">${x}</div>`).join("")}</div>`}
+<p>Sipariş no: <b>${esc(o.orderNo||"")}</b></p>${o.trackingNo?`<p style="margin-top:8px">Kargo takip no: <b>${esc(o.trackingNo)}</b></p>`:""}
+<table style="margin-top:12px">${(o.items||[]).map(x=>`<tr><td>${x.q} × ${esc(x.ad)}</td></tr>`).join("")}</table><h3 style="text-align:right">Toplam: ${TL(o.total)}</h3>
+<p style="font-size:12px;color:var(--soft)">Gizlilik nedeniyle ad, adres ve telefon bu sayfada gösterilmez.</p></div>`};
+V.track=()=>`<h2>Sipariş takibi</h2><form class="box" id="fT" style="max-width:460px"><label>Takip kodunuz</label><input id="tc" placeholder="TK-XXXX-XXXX-XXXX-XXXX" autocomplete="off"><br><br><button class="btn p">Sorgula</button></form>`;
 V.search=q=>{q=q.toLowerCase();const list=P.filter(p=>(p.ad+" "+catName(p.cat)).toLowerCase().includes(q));return`<h2>"${esc(q)}" için sonuçlar</h2>${list.length?`<div class="grid">${list.map(card).join("")}</div>`:empty("Ürün bulunamadı")}`};
 V.prod=id=>{const p=prod(id);if(!p)return empty("Ürün bulunamadı");const h=Math.round(p.fiyat*(1-CFG.havale)*100)/100;
 return`<p style="margin:16px 0"><a href="#" onclick="event.preventDefault();history.back()">← Geri</a></p><div class="pd"><div style="aspect-ratio:1;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:90px;overflow:hidden">${p.img?`<img src="${esc(p.img)}" style="width:100%;height:100%;object-fit:cover">`:ic("package",80)}</div>
@@ -889,8 +911,8 @@ if(PT==="bilgi"){const f=prof;body=`<form class="box" id="fPr"><h3 style="margin
 <div id="fE"></div><br><button class="btn p">Kaydet</button></form>`}
 else{let l=[];try{(await getDocs(query(collection(db,"orders"),where("userId","==",user.uid)))).forEach(d=>l.push(d.data()))}catch{}
 l.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-body=`<div class="box"><h3 style="margin-top:0">Siparişlerim</h3>${l.length?`<table><tr><th>Kod</th><th>Tarih</th><th>Tutar</th><th>Durum</th></tr>${l.map(o=>`<tr><td><a href="#/siparis/${esc(o.code)}"><b style="color:var(--o)">${esc(o.code)}</b></a></td><td>${o.createdAt?new Date(o.createdAt.seconds*1000).toLocaleDateString("tr-TR"):""}</td><td>${TL(o.total)}</td><td><span class="badge">${esc(o.status)}</span></td></tr>`).join("")}</table>`:"<p>Henüz siparişiniz yok.</p>"}</div>`}
-return`<h2>Merhaba, ${esc((prof.ad||user.displayName||user.email).split(" ")[0])}</h2><div class="pf"><div class="side"><button data-pt="bilgi" class="${PT==="bilgi"?"on":""}">${ic("user",18)} Bilgilerim</button><button data-pt="siparis" class="${PT==="siparis"?"on":""}">${ic("file",18)} Siparişlerim</button>${isAdmin()?`<a href="admin.html">⚙️ Yönetim paneli</a>`:""}<button data-out>${ic("logout",18)} Çıkış yap</button></div><div>${body}</div></div>`};
+body=`<div class="box"><h3 style="margin-top:0">Siparişlerim</h3>${l.length?`<table><tr><th>Sipariş no</th><th>Takip kodu</th><th>Tarih</th><th>Tutar</th><th>Durum</th></tr>${l.map(o=>`<tr><td><a href="#/siparis/${esc(o.code)}"><b style="color:var(--o)">${esc(o.code)}</b></a></td><td><small>${esc(o.trackCode||"-")}</small></td><td>${o.createdAt?new Date(o.createdAt.seconds*1000).toLocaleDateString("tr-TR"):""}</td><td>${TL(o.total)}</td><td><span class="badge">${esc(o.status)}</span></td></tr>`).join("")}</table>`:"<p>Henüz siparişiniz yok.</p>"}</div>`}
+return`<h2>Merhaba, ${esc((prof.ad||user.displayName||user.email).split(" ")[0])}</h2>${user.emailVerified?"":note("E-posta adresiniz henüz doğrulanmadı. <button class=\"btn s\" data-verify>Doğrulama e-postası gönder</button>")}<div class="pf"><div class="side"><button data-pt="bilgi" class="${PT==="bilgi"?"on":""}">${ic("user",18)} Bilgilerim</button><button data-pt="siparis" class="${PT==="siparis"?"on":""}">${ic("file",18)} Siparişlerim</button>${isAdmin()?`<a href="admin.html">⚙️ Yönetim paneli</a>`:""}<button data-out>${ic("logout",18)} Çıkış yap</button></div><div>${body}</div></div>`};
 const LEGAL={hakkimizda:["Hakkımızda","Hevesmatik, 3D yazıcıda ürettiği figürleri, kamyon modellerini ve RC araçları satan bağımsız bir atölyedir."],
 iletisim:["İletişim",()=>`${esc(C("firma"))} · ${esc(C("email"))} · ${esc(C("tel"))}`],mesafeli:["Mesafeli satış sözleşmesi","Satış 6502 sayılı Kanun ve Mesafeli Sözleşmeler Yönetmeliği'ne tabidir. Teslimat en geç 30 gün içindedir."],
 iade:["İade ve iptal","Teslimden 14 gün içinde iade edebilirsiniz. Kişiye özel basılan ürünler iade edilemez."],
@@ -969,7 +991,8 @@ $("#profileBtn").onclick=()=>{if(user)location.hash="#/profil";else openAuth()};
 document.addEventListener("click",async e=>{
   if(e.target.closest("#payS"))return handlePay("shopier");
   if(e.target.closest("#payH"))return handlePay("havale");
-  const t=e.target.closest("[data-add],[data-q],[data-rm],[data-cp],[data-dot],[data-cat],[data-pt],[data-out],[data-scq],[data-scrm]");
+  if(e.target.closest("#payW"))return handlePay("whatsapp");
+  const t=e.target.closest("[data-add],[data-q],[data-rm],[data-cp],[data-dot],[data-cat],[data-pt],[data-out],[data-scq],[data-scrm],[data-verify]");
   if(!t)return;const d=t.dataset;
   try{
     if(d.cat!==undefined){activeCat=d.cat;renderCatTabs();renderProducts(true);const ps=$("#productsSection");if(ps){const y=ps.getBoundingClientRect().top+window.scrollY-100;window.scrollTo({top:y,behavior:"smooth"})}return}
@@ -980,6 +1003,7 @@ document.addEventListener("click",async e=>{
     if(d.scrm){cart=cart.filter(x=>x.id!==d.scrm);saveCart();return}
     if(d.cp!==undefined){navigator.clipboard?.writeText(d.cp);t.textContent="✓";return}
     if(d.dot!==undefined){slideTo(+d.dot);startCar();return}
+    if(d.verify!==undefined){await sendEmailVerification(auth.currentUser);t.textContent="✓ Gönderildi, gelen kutunuzu kontrol edin";return}
     if(d.pt){PT=d.pt;route();return}
     if(d.out!==undefined){if(confirm("Çıkış yapmak istiyor musunuz?")){await signOut(auth);location.hash=""}return}
   }catch(x){alert("İşlem başarısız: "+(x.code||x.message))}
@@ -1028,7 +1052,7 @@ const CHAR_SVG=`
 const EYE_OPEN='<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF='<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 
-function openAuth(){
+function openAuth(opt={}){
   let mode="in";
   const o=document.createElement("div");
   o.className="auth-overlay";
@@ -1220,6 +1244,8 @@ function openAuth(){
     const m=o.querySelector("#a1").value.trim();
     const p=o.querySelector("#a2").value;
     if(!m||!p)return E("E-posta ve şifre gerekli.");
+    if(mode==="up"&&!o.querySelector("#a0").value.trim())return E("Ad soyad gerekli.");
+    if(mode==="up"&&(p.length<8||!/[A-Za-z]/.test(p)||!/\d/.test(p)))return E("Şifre en az 8 karakter olmalı ve harf ile rakam içermeli.");
     const btn=o.querySelector("#aB");
     const btnText=btn.textContent;
     btn.disabled=true;
@@ -1231,10 +1257,11 @@ function openAuth(){
         const n=o.querySelector("#a0").value.trim();
         if(n)await updateProfile(c.user,{displayName:n});
         await setDoc(doc(db,"users",c.user.uid),{ad:n,email:m,createdAt:serverTimestamp()},{merge:true});
+        try{await sendEmailVerification(c.user)}catch{}
       }
       clearStates();modal.classList.add("success");
       Ok("Giriş başarılı! Yönlendiriliyorsun...");
-      setTimeout(()=>{close();PT="bilgi";location.hash="#/profil"},900);
+      setTimeout(()=>{close();if(opt.onDone)opt.onDone();else{PT="bilgi";location.hash="#/profil"}},900);
     }catch(x){
       btn.disabled=false;btn.textContent=btnText;
       clearStates();modal.classList.add("error");
@@ -1244,20 +1271,59 @@ function openAuth(){
     }
   };
 
+  if(opt.mode==="up")o.querySelector('.auth-tabs button[data-m="up"]').click();
   setTimeout(()=>o.querySelector("#a1").focus(),220);
 }
 
 /* ============ ÖDEME ============ */
-const genCode=()=>"HVS-"+[...crypto.getRandomValues(new Uint8Array(10))].map(x=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x%31]).join("");
-async function handlePay(m){const g=i=>$("#o"+i).value.trim(),E=s=>$("#oE").innerHTML=note(s,1);
-if(!g(1)||!g(3)||!g(4)||!g(5))return E("Ad, telefon, il/ilçe ve adres zorunludur.");
-if(!/^\S+@\S+\.\S+$/.test(g(2)))return E("Geçerli e-posta girin.");
-if(g(3).replace(/\D/g,"").length<10)return E("Geçerli telefon girin.");
-if(!$("#o7").checked||!$("#o8").checked)return E("Sözleşme ve KVKK onaylarını işaretleyin.");
-const t=totals(),code=genCode();
-try{await setDoc(doc(db,"orders",code),{code,userId:user?user.uid:null,items:cart.map(x=>({id:x.id,ad:prod(x.id).ad,fiyat:prod(x.id).fiyat,q:x.q})),ara:t.sub,indirim:m==="havale"?t.ind:0,kargo:t.k,total:m==="havale"?t.top:t.sub+t.k,odeme:m,status:"Ödeme Bekleniyor",trackingNo:"",not:g(6),musteri:{ad:g(1),email:g(2),tel:g(3),il:g(4),adres:g(5)},onay:true,createdAt:serverTimestamp()});
-if(user&&!prof.adres)setDoc(doc(db,"users",user.uid),{ad:prof.ad||g(1),tel:g(3),il:g(4),adres:g(5)},{merge:true}).catch(()=>{});
-cart=[];saveCart();if(m==="shopier")window.open(C("shopierUrl"),"_blank");location.hash="#/siparis/"+code}catch(x){console.error(x);E("Sipariş kaydedilemedi, tekrar deneyin.")}}
+const TRK=()=>"TK-"+[0,1,2,3].map(()=>[...crypto.getRandomValues(new Uint8Array(4))].map(x=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x%31]).join("")).join("-");
+const draftGet=()=>LSg("hvs_draft",{});
+const draftSave=()=>{if(!$("#o1"))return;LSs("hvs_draft",{ad:$("#o1").value,email:$("#o2").value,tel:$("#o3").value,il:$("#o4").value,adres:$("#o5").value,not:$("#o6").value,k7:$("#o7").checked,k8:$("#o8").checked})};
+document.addEventListener("input",e=>{if(/^o[1-8]$/.test(e.target.id))draftSave()});
+document.addEventListener("change",e=>{if(/^o[78]$/.test(e.target.id))draftSave()});
+const readForm=()=>{draftSave();const d=draftGet(),t=x=>String(x||"").trim();return{ad:t(d.ad),email:t(d.email)||(user?user.email:""),tel:t(d.tel),il:t(d.il),adres:t(d.adres),not:t(d.not),k7:!!d.k7,k8:!!d.k8}};
+const waNum=()=>{let n=String(C("whatsapp")||"").replace(/\D/g,"");if(n.startsWith("00"))n=n.slice(2);if(n.startsWith("0"))n="90"+n.slice(1);else if(n.length===10&&n[0]==="5")n="90"+n;return n.length>=11?n:""};
+const fmtDate=ts=>{const d=ts?new Date(ts):new Date();return d.toLocaleDateString("tr-TR")+" "+d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})};
+function waMessage(o){const m=o.musteri||{},L=(o.items||[]).map(x=>`- ${x.ad}${x.v?" – "+x.v:""} – ${x.q} × ${TL(x.fiyat)} = ${TL(x.fiyat*x.q)}`).join("\n");
+return`Merhaba, Hevesmatik üzerinden sipariş vermek istiyorum.\n\nSipariş No: ${o.code}\nSipariş Tarihi: ${fmtDate(o.tsMs)}\n\nMüşteri Bilgileri:\nAd Soyad: ${m.ad}\nTelefon: ${m.tel}\nE-posta: ${m.email}\nTeslimat Adresi: ${m.adres}, ${m.il}\n${o.not?"Sipariş Notu: "+o.not+"\n":""}\nSipariş Detayları:\n${L}\n\nAra Toplam: ${TL(o.ara)}\nKargo Ücreti: ${o.kargo?TL(o.kargo):"Ücretsiz"}\nİndirim: ${TL(o.indirim||0)}\nGenel Toplam: ${TL(o.total)}\n\nÖdeme Yöntemi: WhatsApp üzerinden sipariş\n\nSiparişimi onaylamak istiyorum.`}
+function waUrl(o){const n=waNum(),msg=waMessage(o),mobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent),q=encodeURIComponent(msg);
+let url=mobile?`https://wa.me/${n}?text=${q}`:`https://web.whatsapp.com/send?phone=${n}&text=${q}`;const long=url.length>7000;if(long)url=`https://wa.me/${n}`;return{url,long,msg,n}}
+async function nextOrderNo(){const y=new Date().getFullYear(),ref=doc(db,"counters","orders-"+y);
+try{const n=await runTransaction(db,async tx=>{const sn=await tx.get(ref),v=(sn.exists()?sn.data().n:0)+1;tx.set(ref,{n:v});return v});return`HM-${y}-${String(n).padStart(4,"0")}`}
+catch(e){console.warn("sayaç",e);return`HM-${y}-${[...crypto.getRandomValues(new Uint8Array(5))].map(x=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x%31]).join("")}`}}
+async function createOrder(m,F){const t=totals();if(!cart.length)throw new Error("Sepet boş.");
+const items=cart.map(x=>{const p=prod(x.id);if(!p)throw new Error("Sepetteki bir ürün artık satışta değil. Sepeti güncelleyin.");return{id:x.id,ad:p.ad,fiyat:p.fiyat,q:x.q,...(x.v?{v:x.v}:{})}});
+const hv=m==="havale",total=hv?t.top:t.sub+t.k,status=hv?"Havale/EFT Bekleniyor":m==="whatsapp"?"WhatsApp Onayı Bekleniyor":"Ödeme Bekleniyor",orderNo=await nextOrderNo(),trackCode=TRK(),tsMs=Date.now();
+const o={code:orderNo,orderNo,trackCode,userId:user?user.uid:null,items,ara:t.sub,indirim:hv?t.ind:0,kargo:t.k,total,odeme:m,status,trackingNo:"",not:F.not,musteri:{ad:F.ad,email:F.email,tel:F.tel,il:F.il,adres:F.adres},onay:true,tsMs};
+await setDoc(doc(db,"orders",orderNo),{...o,createdAt:serverTimestamp()});
+await setDoc(doc(db,"tracking",trackCode),{orderNo,status,odeme:m,items:items.map(x=>({ad:x.ad,q:x.q})),total,trackingNo:"",tsMs}).catch(e=>console.warn("takip kaydı",e));
+return o}
+function accountPrompt(onAccount,onGuest){const o=document.createElement("div");o.className="auth-overlay show";
+o.innerHTML=`<div class="auth-modal" role="dialog" aria-modal="true" style="max-width:440px"><button class="auth-close" type="button" aria-label="Kapat" data-x>×</button><h3 style="margin:0 0 8px;font-size:20px;line-height:1.3">Siparişinizi takip edebilmek için bir hesap oluşturmak ister misiniz?</h3><p style="color:var(--soft);font-size:14px;margin-bottom:16px">Hesapla siparişlerinizi "Siparişlerim" bölümünden izler, bilgilerinizi sonraki alışverişte otomatik doldurursunuz. Sepetiniz ve girdiğiniz bilgiler korunur.</p><button class="btn p" data-a="up" style="width:100%;margin-bottom:8px">Hesap oluştur ve devam et</button><button class="btn" data-a="in" style="width:100%;margin-bottom:8px">Giriş yap ve devam et</button><button class="btn" data-a="guest" style="width:100%">Hesap oluşturmadan devam et</button></div>`;
+document.body.appendChild(o);const cl=()=>o.remove();
+o.onclick=e=>{if(e.target===o||e.target.closest("[data-x]"))return cl();const a=e.target.closest("[data-a]")?.dataset.a;if(!a)return;cl();if(a==="guest")onGuest();else{draftSave();openAuth({mode:a,onDone:onAccount})}}}
+let ordering=false;
+async function handlePay(m,opt={}){if(ordering)return;const E=s=>{const el=$("#oE");if(el)el.innerHTML=note(s,1)};const F=readForm();
+if(!F.ad||!F.tel||!F.il||!F.adres)return E("Ad soyad, telefon, il/ilçe ve adres zorunludur.");
+if(!/^\S+@\S+\.\S+$/.test(F.email))return E("Geçerli e-posta girin.");
+if(F.tel.replace(/\D/g,"").length<10)return E("Geçerli telefon girin.");
+if(!F.k7||!F.k8)return E("Sözleşme ve KVKK onaylarını işaretleyin.");
+if(!cart.length)return E("Sepetiniz boş.");
+if(m==="whatsapp"&&!waNum())return E("İşletmenin WhatsApp numarası henüz tanımlanmamış. Lütfen başka bir ödeme yöntemi seçin.");
+if(m==="havale"&&!user&&!opt.guest)return accountPrompt(()=>handlePay("havale",{guest:1}),()=>handlePay("havale",{guest:1}));
+ordering=true;$$(".pay").forEach(b=>b.disabled=true);
+let w=null;if(m==="whatsapp"||m==="shopier"){try{w=window.open("","_blank")}catch{}}
+try{const o=await createOrder(m,F);
+const lo=LSg("hvs_lo",{});lo[o.code]=o;const ks=Object.keys(lo);ks.slice(0,Math.max(0,ks.length-5)).forEach(k=>delete lo[k]);LSs("hvs_lo",lo);
+LSs("hvs_draft",{});
+if(user&&!prof.adres)setDoc(doc(db,"users",user.uid),{ad:prof.ad||F.ad,tel:F.tel,il:F.il,adres:F.adres},{merge:true}).catch(()=>{});
+try{track("order",{code:o.code,total:o.total,odeme:m})}catch{}
+cart=[];saveCart();
+if(m==="shopier"){if(w)w.location.href=C("shopierUrl");else window.open(C("shopierUrl"),"_blank")}
+if(m==="whatsapp"&&w){const u=waUrl(o);if(u.long)navigator.clipboard?.writeText(u.msg);w.location.href=u.url}
+ordering=false;location.hash="#/siparis/"+o.code}
+catch(x){console.error(x);if(w)try{w.close()}catch{}ordering=false;$$(".pay").forEach(b=>b.disabled=false);
+E(x&&x.code==="permission-denied"?"Sipariş kaydedilemedi: Firestore kuralları güncel değil (firestore.rules dosyasını yayınlayın).":"Sipariş kaydedilemedi: "+(x&&x.message?x.message:"tekrar deneyin."))}}
 
 /* ============ ANALYTICS ============ */
 const VID=(()=>{let v=LSg("hvs_vid",null);if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);LSs("hvs_vid",v)}return v})();

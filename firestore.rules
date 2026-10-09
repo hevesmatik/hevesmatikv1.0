@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null && request.auth.token.email == "hevesmatik@gmail.com";
+    }
+    match /products/{id}   { allow read: if true; allow write: if admin(); }
+    match /categories/{id} { allow read: if true; allow write: if admin(); }
+    match /slides/{id}     { allow read: if true; allow write: if admin(); }
+    match /config/{id}     { allow read: if true; allow write: if admin(); }
+    match /users/{uid}     { allow read, write: if (request.auth != null && request.auth.uid == uid) || admin(); }
+
+    // Özel sipariş kaydı: yalnızca sahibi (hesaplı) ve admin okuyabilir
+    match /orders/{code} {
+      allow create: if request.resource.data.keys().hasAll(["code","trackCode","items","total","musteri","odeme","status"])
+                    && (request.resource.data.userId == null
+                        || (request.auth != null && request.resource.data.userId == request.auth.uid));
+      allow get, list: if admin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow update, delete: if admin();
+    }
+    // Herkese açık takip kaydı: sadece tahmin edilmesi zor takip koduyla tek tek okunur (liste yok), kişisel veri içermez
+    match /tracking/{trackCode} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.resource.data.keys().hasOnly(["orderNo","status","odeme","items","total","trackingNo","tsMs"]);
+      allow update, delete: if admin();
+    }
+    // Sıralı sipariş numarası (HM-YYYY-0001)
+    match /counters/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.n == 1;
+      allow update: if request.resource.data.n == resource.data.n + 1;
+    }
+    match /events/{id}     { allow create: if true; allow read: if admin(); }
+    match /sessions/{id}   { allow create, update: if true; allow read: if admin(); }
+    match /newsletter/{id} { allow create: if true; allow read: if admin(); }
+  }
+}
